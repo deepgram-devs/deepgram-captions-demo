@@ -8,6 +8,8 @@ from deepgram_captions.converters import DeepgramConverter
 from deepgram_captions.webvtt import webvtt
 from deepgram_captions.srt import srt
 
+
+
 # STATE
 if 'video_options' not in st.session_state:
     st.session_state.video_options = {
@@ -42,7 +44,7 @@ def transcribe_file(url):
     # Download the audio stream
     audio_stream = yt.streams.filter(only_audio=True).first()
     audio_file_path = f'./audio_files/{yt.title}.mp3'
-    audio_stream.download(output_path='audio_files', filename=yt.title)
+    audio_stream.download(output_path='audio_files', filename=yt.title+'.mp3')
 
     # Transcribe the audio file
     deepgram = Deepgram(DEEPGRAM_API_KEY)
@@ -68,6 +70,38 @@ def transcribe_file(url):
 
     return web_vtt, srt_captions, response
 
+def time_to_seconds(time_str):
+    hours, minutes, seconds = map(float, time_str.replace(',', '.').split(':'))
+    return hours * 3600 + minutes * 60 + seconds
+
+def get_caption_at_time(captions, played_seconds):
+    for caption in captions:
+        start_time, end_time = caption["start"], caption["end"]
+        start_seconds, end_seconds = time_to_seconds(start_time), time_to_seconds(end_time)
+        if start_seconds <= played_seconds <= end_seconds:
+            return caption["text"]
+    return ""
+
+def parse_srt(srt_text):
+    captions = []
+    lines = srt_text.strip().split("\n\n")
+    for line in lines:
+        parts = line.split("\n")
+        if len(parts) >= 3:
+            index = parts[0]
+            time_range = parts[1].split(" --> ")
+            if len(time_range) == 2:
+                start_time = time_range[0]
+                end_time = time_range[1]
+                text = "\n".join(parts[2:])
+                captions.append({
+                    "index": index,
+                    "start": start_time,
+                    "end": end_time,
+                    "text": text,
+                })
+    return captions
+
 def run():
     st.set_page_config(
         page_title="Deepgram Captions",
@@ -81,10 +115,18 @@ def run():
 
     url = st.text_input("First URL", "https://www.youtube.com/watch?v=dg4NAG6HYmE")
 
-    if st.button("Play/Pause"):
-        video_options["playing"] = not video_options["playing"]
+    # if st.button("Play/Pause"):
+    #     video_options["playing"] = not video_options["playing"]
 
     event = st_player(url, **video_options, key="youtube_player")
+    if st.session_state.youtube_player:
+      played_seconds = st.session_state.youtube_player["data"]["playedSeconds"]
+    if st.session_state.captions["srt"]:
+      # st.text("Test")
+      srt_captions_dict = parse_srt(st.session_state.captions["srt"])
+      st.text(srt_captions_dict)
+      current_caption_srt = get_caption_at_time(srt_captions_dict, played_seconds)
+      st.text(current_caption_srt)
 
     # Transcribe the audio when the user enters a new URL
     if st.session_state.url != url:
