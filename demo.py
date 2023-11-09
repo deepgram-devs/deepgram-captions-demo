@@ -11,6 +11,12 @@ from deepgram_captions.srt import srt
 
 
 # STATE
+if 'selections' not in st.session_state:
+    st.session_state.selections = {
+        "srt": True,
+        "webvtt": False,
+    }
+
 if 'video_options' not in st.session_state:
     st.session_state.video_options = {
         "events": ["onProgress"],
@@ -102,6 +108,26 @@ def parse_srt(srt_text):
                 })
     return captions
 
+def parse_webvtt(webvtt_text):
+    captions = []
+    lines = webvtt_text.strip().split("\n")
+    
+    # Skip the header lines
+    lines = lines[4:]
+    
+    for line in lines:
+        time_range = line.split(" --> ")
+        if len(time_range) == 2:
+            start_time = time_range[0]
+            end_time = time_range[1]
+            text = lines[lines.index(line) + 1]
+            captions.append({
+                "start": start_time,
+                "end": end_time,
+                "text": text,
+            })
+    return captions
+
 def run():
     st.set_page_config(
         page_title="Deepgram Captions",
@@ -109,9 +135,15 @@ def run():
         # layout="wide",
     )
 
+    st.header('Deepgram Captions', divider="rainbow")
+
     # st.write(st.session_state)
 
     video_options = st.session_state.video_options
+
+    caption_choice = st.selectbox(
+    'Select your type of captions:',
+    ('srt', 'webvtt'))
 
     url = st.text_input("First URL", "https://www.youtube.com/watch?v=dg4NAG6HYmE")
 
@@ -121,41 +153,28 @@ def run():
     event = st_player(url, **video_options, key="youtube_player")
     if st.session_state.youtube_player:
       played_seconds = st.session_state.youtube_player["data"]["playedSeconds"]
-    if st.session_state.captions["srt"]:
-      # st.text("Test")
-      srt_captions_dict = parse_srt(st.session_state.captions["srt"])
-      st.text(srt_captions_dict)
-      current_caption_srt = get_caption_at_time(srt_captions_dict, played_seconds)
-      st.text(current_caption_srt)
+      if caption_choice == "srt":
+        srt_captions_dict = parse_srt(st.session_state.captions["srt"])
+        # st.text(srt_captions_dict)
+        current_caption_srt = get_caption_at_time(srt_captions_dict, played_seconds)
+        st.markdown(f'<span style="display: block; height: 100px; text-align: center; font-size: 1.3em; color:purple; font-weight:600;">{current_caption_srt}</span>', unsafe_allow_html=True)
+        # if st.session_state.youtube_player:
+        if st.session_state.youtube_player["data"]["played"] > 0:
+          st.text("Full srt captions for the entire video:")
+          st.text(st.session_state.captions["srt"])
+      if caption_choice == "webvtt":
+        webvtt_captions_dict = parse_webvtt(st.session_state.captions["webvtt"])
+        # st.write(webvtt_captions_dict)
+        current_caption_webvtt = get_caption_at_time(webvtt_captions_dict, played_seconds)
+        st.markdown(f'<span style="display: block; height: 100px; text-align: center; font-size: 1.3em; color:blue; font-weight:600;">{current_caption_webvtt}</span>', unsafe_allow_html=True)
+        if st.session_state.youtube_player["data"]["played"] > 0:
+          st.text("Full webvtt captions for the entire video:")
+          st.text(st.session_state.captions["webvtt"])
 
-    # Transcribe the audio when the user enters a new URL
+  # Transcribe the audio when the user enters a new URL
     if st.session_state.url != url:
         st.session_state.url = url
         st.session_state.captions["webvtt"], st.session_state.captions["srt"], st.session_state.transcription = transcribe_file(url)
-
-    if st.session_state.transcription:
-      st.json(st.session_state.transcription, expanded=False)
-
-
-    col1, col2 = st.columns(2)
-
-    display_webvtt = None
-    display_srt = None
-    if st.session_state.captions["webvtt"]:
-        with col1:
-            display_webvtt = st.checkbox("Display webVTT Captions")
-    if display_webvtt and st.session_state.captions["webvtt"]:
-        with col1:
-            st.text(st.session_state.captions["webvtt"])
-
-    # Display SRT captions using a checkbox
-    if st.session_state.captions["srt"]:
-        with col2:
-            display_srt = st.checkbox("Display SRT Captions")
-    
-    if display_srt and st.session_state.captions["srt"]:
-        with col2:
-            st.text(st.session_state.captions["srt"])
 
 if __name__ == "__main__":
     run()
