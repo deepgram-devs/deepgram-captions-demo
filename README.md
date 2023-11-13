@@ -10,6 +10,8 @@ Click the play button on the video player. The app will download the youtube fil
 
 You can switch between srt and webvtt with the dropdown select menu. Add a different youtube video if you want, and click the copy button to copy the captions when they appear in the text block below.
 
+![Captions demo video player](./assets/captions_demo.png)
+
 ## 🚀 Quick Start
 
 1. Install all the packages:
