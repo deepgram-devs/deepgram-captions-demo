@@ -66,7 +66,7 @@ def get_captions(url):
 
 def run():
     st.set_page_config(
-        page_title="SRT VTT Captions",
+        page_title="SRT WebVTT Captions",
         page_icon="🗣️",
     )
 
