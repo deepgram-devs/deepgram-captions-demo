@@ -45,6 +45,7 @@ if "captions" not in st.session_state:
     st.session_state.captions = {
         "webvtt": "",
         "srt": "",
+        "webvtt_speakers":""
     }
 
 if "url" not in st.session_state:
@@ -59,7 +60,8 @@ def get_captions(url):
     if captions:
         st.session_state.captions["webvtt"] = captions[0]
         st.session_state.captions["srt"] = captions[1]
-        st.session_state.transcription = captions
+        st.session_state.transcription = captions[2]
+        st.session_state.captions["webvtt_speakers"] = captions[3]
 
 
 def run():
@@ -76,8 +78,8 @@ def run():
 
     caption_choice = st.selectbox("Select your type of captions:", ("srt", "webvtt"))
 
-    url = st.text_input("First URL", "https://www.youtube.com/watch?v=MPmx09S4cLw")
-
+    url = st.text_input("YouTube URL", "https://www.youtube.com/watch?v=MPmx09S4cLw")
+    speakers = st.checkbox("Add speakers (webvtt only)")
     video_options = st.session_state.video_options
 
     # Get captions in webvtt and srt format
@@ -104,10 +106,22 @@ def run():
             if st.session_state.youtube_player["data"]["played"] > 0:
                 st.subheader("Full srt captions for the entire video:")
                 st.code(st.session_state.captions["srt"], language="text")
-        #   Display and use webvtt captions in the demo:
-        if caption_choice == "webvtt":
+        #   Display and use webvtt captions (with speakers) in the demo:
+        if caption_choice == "webvtt" and speakers:
+            webvtt_captions_dict = parse_webvtt(st.session_state.captions["webvtt_speakers"])
+            current_caption_webvtt = get_caption_at_time(
+                webvtt_captions_dict, played_seconds
+            )
+            st.markdown(
+                f'<span style="display: block; height: 100px; text-align: center; font-size: 1.7em; color:#13EF93; font-weight:600;">{current_caption_webvtt}</span>',
+                unsafe_allow_html=True,
+            )
+            if st.session_state.youtube_player["data"]["played"] > 0:
+                st.subheader("Full webvtt captions for the entire video:")
+                st.code(st.session_state.captions["webvtt_speakers"], language="text")
+        #   Display and use webvtt captions (without speakers) in the demo:
+        else:
             webvtt_captions_dict = parse_webvtt(st.session_state.captions["webvtt"])
-            # st.write(webvtt_captions_dict)
             current_caption_webvtt = get_caption_at_time(
                 webvtt_captions_dict, played_seconds
             )
