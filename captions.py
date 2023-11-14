@@ -1,16 +1,12 @@
 import streamlit as st
-import os
 import asyncio
-from dotenv import load_dotenv
 from deepgram import Deepgram
 from deepgram_captions import DeepgramConverter, webvtt, srt
 from pytube import YouTube
 from helpers import clean_filename
 
-load_dotenv()
-
 def get_diarized(audio_file_path):
-    api_key = os.getenv("DEEPGRAM_API_KEY")
+    api_key = st.secrets["DEEPGRAM_API_KEY"]
     deepgram = Deepgram(api_key)
     audio = open(audio_file_path, "rb")
 
@@ -41,7 +37,7 @@ def transcribe_file(url):
     audio_stream.download(output_path="audio_files", filename=cleaned_title + ".mp3")
 
     # Transcribe the audio file
-    api_key = os.getenv("DEEPGRAM_API_KEY")
+    api_key = st.secrets["DEEPGRAM_API_KEY"]
     deepgram = Deepgram(api_key)
     audio = open(audio_file_path, "rb")
     source = {"buffer": audio, "mimetype": "audio/mpeg"}
