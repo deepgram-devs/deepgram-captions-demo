@@ -3,4 +3,3 @@ deepgram-sdk==2.12.0
 pytube==15.0.0
 streamlit==1.28.1
 streamlit-player==0.1.5
-python-dotenv==2.8.1
