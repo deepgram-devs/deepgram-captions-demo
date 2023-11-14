@@ -24,11 +24,6 @@ custom_header = """
 
 
 # STATE
-if "selections" not in st.session_state:
-    st.session_state.selections = {
-        "srt": True,
-        "webvtt": False,
-    }
 
 if "video_options" not in st.session_state:
     st.session_state.video_options = {
