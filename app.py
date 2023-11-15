@@ -17,7 +17,7 @@ custom_header = """
         }
     </style>
     <div class="custom-header">
-        <h1>SRT VTT Captions</h1>
+        <h1>SRT WebVTT Captions</h1>
         <div class="divider"></div>
     </div>
 """
