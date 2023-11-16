@@ -1,5 +1,10 @@
 import string
+import re
 
+
+def is_valid_youtube_url(url):
+    pattern = r'https://www\.youtube\.com/watch\?v=[\w-]{11}$'
+    return bool(re.match(pattern, url))
 
 def clean_filename(title):
     title = title.lower()

@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit_player import st_player
-from helpers import get_caption_at_time, parse_srt, parse_webvtt
+from helpers import get_caption_at_time, parse_srt, parse_webvtt, is_valid_youtube_url
 from captions import transcribe_file
 
 custom_header = """
@@ -83,8 +83,11 @@ def run():
 
     # Transcribe the audio when the user enters a new URL
     if st.session_state.url != url:
-        st.session_state.url = url
-        get_captions(url)
+        if is_valid_youtube_url(url):
+            st.session_state.url = url
+            get_captions(url)
+        else:
+            st.warning("Please enter a valid YouTube URL in the expected format: `https://www.youtube.com/watch?v=MPmx09S4cLw`")
 
     event = st_player(url, **video_options, key="youtube_player")
 
