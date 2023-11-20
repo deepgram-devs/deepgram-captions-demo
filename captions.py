@@ -58,5 +58,6 @@ def transcribe_file(url):
     web_vtt = webvtt(transcription)
     web_vtt_speakers = webvtt(transcription_with_speakers)
     srt_captions = srt(transcription)
+    srt_speakers = srt(transcription_with_speakers)
 
-    return web_vtt, srt_captions, response, web_vtt_speakers
+    return web_vtt, srt_captions, response, web_vtt_speakers, srt_speakers

@@ -1,4 +1,4 @@
-deepgram-captions==1.0.5
+deepgram-captions==1.0.6
 deepgram-sdk==2.12.0
 pytube==15.0.0
 streamlit==1.28.1
